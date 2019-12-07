@@ -59,6 +59,7 @@ def RRQ_connection(filename, address, mode='octet'):
     block_number = 1
     block = 0
     is_binary = False
+    timeouts = 0
     if mode == 'octet':
         fmode = 'rb'
         fcode = None
@@ -89,15 +90,17 @@ def RRQ_connection(filename, address, mode='octet'):
         try:
             ack, frenchman = sock.recvfrom(1024)
             block = unpack(ack).block
-
+            print("received acknowledgement: " + str(block))
             if block == block_number:
                 block_number = block_number + 1
             else:
                 #err... we got a previous ack.
                 file.seek(-512, 1) # so lazy, so bad... but I don't want to make an async state machine.
         except TimeoutError:
-            file.seek(-512, 1)
-
+            if timeouts < 3:
+                file.seek(-512, 1)
+            else:
+                sock.sendto(pack_error(0, "Timeout."), address)
         if len(datum) < 512:
             break
     #### End Loop ####
