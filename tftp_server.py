@@ -204,7 +204,7 @@ def pack_error(errorcode, errormessage):
 
 
 parser = argparse.ArgumentParser(description='A server for TFTP, made by Scherza. Version 0.1 or something.')
-parser.add_argument('-sp', type=int, required=False, nargs=1, default=69)
+parser.add_argument('-sp', type=int, required=False, default=69)
 
 args = parser.parse_args()
 server_port = args.sp
