@@ -77,7 +77,7 @@ def RRQ_connection(filename, address, mode='octet'):
         sock.close()
         return
     # Now for the looop.
-    print("Loop beginning...")
+    print(str(address[0]) + ':' + str(address[1]))
     while True:
         datum = file.read(512)
         print('data len= '+ str(len(datum)))
@@ -209,7 +209,7 @@ def pack_ack( seq ):
     return pckt.to_bytes()
 
 def pack_data(seq, data):
-    return b'\x00\x03' + seq.to_bytes(2, byteorder='big') + data.encode(encoding='ascii')
+    return b'\x00\x03' + seq.to_bytes(2, byteorder='big') + data
 
 def pack_error(errorcode, errormessage):
     return ( b'\x00\x05' + errorcode.to_bytes(2, byteorder='big') + errormessage.encode('ascii') + b'\x00' )
