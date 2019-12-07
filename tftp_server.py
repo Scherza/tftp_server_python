@@ -53,7 +53,7 @@ def main(server_address, server_port):
 def RRQ_connection(filename, address, mode='octet'):
     port = random.randrange(5000, 60000)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind(('', port)) #system socket binding autocreation. I'm lazy.
+    sock.bind(('127.0.0.1', port)) #system socket binding autocreation. I'm lazy.
     sock.settimeout(default_timeout)
     file = None
     block_number = 1
