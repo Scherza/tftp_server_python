@@ -209,7 +209,7 @@ def pack_ack( seq ):
     return pckt.to_bytes()
 
 def pack_data(seq, data):
-    return b'\x00\x03' + seq.to_bytes(2, byteorder='big') + data
+    return b'\x00\x03' + seq.to_bytes(2, byteorder='big') + data.encode(encoding='ascii')
 
 def pack_error(errorcode, errormessage):
     return ( b'\x00\x05' + errorcode.to_bytes(2, byteorder='big') + errormessage.encode('ascii') + b'\x00' )
