@@ -1,6 +1,7 @@
 import threading
 import socket
 import argparse
+import random
 
 RRQ = 1
 WRQ = 2
@@ -50,6 +51,8 @@ def main(server_address, server_port):
     return
 
 def RRQ_connection(filename, address, mode='octet'):
+    print('Thread started: RRQ, server.')
+    port = random.randrange(5000, 60000)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(('', 0)) #system socket binding autocreation. I'm lazy.
     sock.settimeout(default_timeout)
@@ -79,6 +82,7 @@ def RRQ_connection(filename, address, mode='octet'):
         datum = file.read(512)
         cow = pack_data(block_number, datum)
         sock.sendto(cow, address=address)
+        print("sent file with block="+ block_number)
         ack = None
         polls = 0
         try:
