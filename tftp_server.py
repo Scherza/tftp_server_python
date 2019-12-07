@@ -51,12 +51,14 @@ def RRQ_connection(filename, address, mode='octet'):
     file = None
     block_number = 1
     block = 0
+    is_binary = False
     if mode == 'octet':
         fmode = 'rb'
         fcode = None
+        is_binary = True
     elif mode == 'netascii':
         fmode = 'r'
-        fcode = 'ascii'
+        fcode = None #'ascii'
     else:
         fmode = 'r'
         fcode = None
@@ -197,10 +199,11 @@ def pack_ack( seq ):
     return pckt.to_bytes()
 
 def pack_data(seq, data):
-    pckt = Packet(DATA)
-    pckt.block = seq
-    pckt.data = data
-    return pckt.to_bytes()
+    # pckt = Packet(DATA)
+    # pckt.block = seq
+    # pckt.data = data
+    # return pckt.to_bytes()
+    return (b'\x00\x03' + seq.to_bytes(2, byteorder='big') + data)
 
 def pack_error(errorcode, errormessage):
     return ( b'\x00\x05' + errorcode.to_bytes(2, byteorder='big') + errormessage.encode('ascii') + b'\x00' )
