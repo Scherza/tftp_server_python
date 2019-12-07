@@ -18,7 +18,7 @@ block_length = 512 # in Bytes
 def main(server_address, server_port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind((server_address, server_port))
-    sock.settimeout(default_timeout) # non-blocking socket for udp. Basically, polling.
+    sock.settimeout(default_timeout) # non-blocking socket for udp. Using a default timeout.
     threads = []
     while True:
         try:
@@ -27,7 +27,6 @@ def main(server_address, server_port):
             if pckt.opcode == RRQ:
                 if pckt.filename == 'shutdown.txt':
                     break
-                    pass
                 else:
                     threads.append(threading.Thread(RRQ_connection(pckt.filename, source)))
             elif pckt.opcode == WRQ:
@@ -38,6 +37,8 @@ def main(server_address, server_port):
             sock.sendto(pack_error(0, 'Malformed Packet'), source)
         except TimeoutError as t:
             pass # Just here for completeness, I don't care if this exception happens.
+        except socket.timeout as t:
+            pass # ...
     ## Shutdown.txt has been reached. Time to die.
     for thread in threads:
         thread.join()
@@ -58,7 +59,7 @@ def RRQ_connection(filename, address, mode='octet'):
         is_binary = True
     elif mode == 'netascii':
         fmode = 'r'
-        fcode = None #'ascii'
+        fcode = 'utf-8' #'ascii'
     else:
         fmode = 'r'
         fcode = None
