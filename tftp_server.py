@@ -51,7 +51,6 @@ def main(server_address, server_port):
     return
 
 def RRQ_connection(filename, address, mode='octet'):
-    print('Thread started: RRQ, server.')
     port = random.randrange(5000, 60000)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(('', 0)) #system socket binding autocreation. I'm lazy.
@@ -78,6 +77,7 @@ def RRQ_connection(filename, address, mode='octet'):
         sock.close()
         return
     # Now for the looop.
+    print("Loop beginning...")
     while True:
         datum = file.read(512)
         cow = pack_data(block_number, datum)
@@ -179,12 +179,12 @@ def unpack(datagramaslamalam): #returns a more useful packet object.
             j = 2
             while datagramaslamalam[j] != 0:
                 j = j + 1
-            pckt.filename = datagramaslamalam[i:j]
+            pckt.filename = datagramaslamalam[i:j].decode(encoding='ascii')
             i = j + 1
             j = i
             while datagramaslamalam[j] != 0:
                 j = j + 1
-            pckt.mode = datagramaslamalam[i:j]
+            pckt.mode = datagramaslamalam[i:j].decode(encoding='ascii')
         elif opcode == ACK:
             pckt.block = int.from_bytes( datagramaslamalam[2:4] , byteorder='big' )
         elif opcode == DATA:
