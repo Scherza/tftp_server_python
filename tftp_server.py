@@ -84,7 +84,7 @@ def RRQ_connection(filename, address, mode='octet'):
         cow = pack_data(block_number, datum)
         print("sending file bit " + str(block_number))
         sock.sendto(cow, address=address)
-        print("sent file with block="+ block_number)
+        print("sent file with block="+ str(block_number))
         ack = None
         try:
             ack, frenchman = sock.recvfrom(1024)
