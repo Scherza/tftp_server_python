@@ -63,7 +63,10 @@ def RRQ_connection(filename, address, mode='octet'):
     try:
         file = open(filename, mode=fmode, encoding=fcode)
     except FileNotFoundError:
-        pass #todo: Error. Return.
+        pass
+        sock.sendto(pack_error(1, ''), address)
+        sock.close()
+        return
     # Now for the looop.
     while True:
         datum = file.read(512)
