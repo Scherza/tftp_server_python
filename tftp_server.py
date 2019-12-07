@@ -28,9 +28,13 @@ def main(server_address, server_port):
                 if pckt.filename == 'shutdown.txt':
                     break
                 else:
-                    threads.append(threading.Thread(RRQ_connection(pckt.filename, source)))
+                    tmp = threading.Thread(RRQ_connection(pckt.filename, source))
+                    tmp.start()
+                    threads.append(tmp)
             elif pckt.opcode == WRQ:
-                threads.append(threading.Thread(WRQ_connection(pckt.filename, source)))
+                tmp = threading.Thread(WRQ_connection(pckt.filename, source))
+                tmp.start()
+                threads.append(tmp)
             else:
                 sock.sendto(pack_error(5, "Target Port reserved for RRQ/WRQ. Errant packet?"), source)
         except TypeError as t:
