@@ -73,7 +73,7 @@ def RRQ_connection(filename, address, mode='octet'):
     try:
         file = open(filename, mode=fmode, encoding=fcode)
     except FileNotFoundError:
-        pass
+        print('Error: File Not Found.')
         sock.sendto(pack_error(1, ''), address)
         sock.close()
         return
