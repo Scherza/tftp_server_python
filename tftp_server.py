@@ -65,7 +65,7 @@ def RRQ_connection(filename, address, mode='octet'):
         is_binary = True
     elif mode == 'netascii':
         fmode = 'r'
-        fcode = 'utf-8' #'ascii'
+        fcode = 'ascii' #'ascii'
     else:
         fmode = 'r'
         fcode = None
@@ -83,7 +83,7 @@ def RRQ_connection(filename, address, mode='octet'):
         print('data len= '+ str(len(datum)))
         cow = pack_data(block_number, datum)
         print("sending file bit " + str(block_number))
-        sock.sendto(cow, address=address)
+        sock.sendto(cow, address)
         print("sent file with block="+ str(block_number))
         ack = None
         try:
