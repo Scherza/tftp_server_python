@@ -228,5 +228,6 @@ parser.add_argument('-sp', type=int, required=False, default=69)
 args = parser.parse_args()
 server_port = args.sp
 
-loop = asyncio.AbstractEventLoop()
+loop = asyncio.get_event_loop()
 loop.run_until_complete(main('', server_port))
+loop.close()
