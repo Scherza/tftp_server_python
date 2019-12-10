@@ -2,6 +2,7 @@ import threading
 import socket
 import argparse
 import random
+import asyncio
 
 RRQ = 1
 WRQ = 2
@@ -16,45 +17,46 @@ block_length = 512 # in Bytes
 
 
 
-def main(server_address, server_port):
+async def main(server_address, server_port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind((server_address, server_port))
-    sock.settimeout(default_timeout) # non-blocking socket for udp. Using a default timeout.
-    threads = []
+    sock.settimeout(0.0) # non-blocking socket for udp. Only returns if data is available immediately.
+    coro_pool = []
+    loop = asyncio.get_running_loop()
     while True:
         try:
             (datagram, source) = sock.recvfrom(1024)
-            pckt = unpack(datagram)
-            if pckt.opcode == RRQ:
-                if pckt.filename == 'shutdown.txt':
-                    break
+            try:
+                pckt = unpack(datagram)
+                if pckt.opcode == RRQ:
+                    if pckt.filename == 'shutdown.txt':
+                        break
+                    else:
+                        tmp = loop.create_task(RRQ_connection(pckt.filename, source))
+                        coro_pool.append(tmp)
+                elif pckt.opcode == WRQ:
+                    tmp = loop.create_task(WRQ_connection(pckt.filename, source))
+                    coro_pool.append(tmp)
                 else:
-                    tmp = threading.Thread(RRQ_connection(pckt.filename, source))
-                    tmp.start()
-                    threads.append(tmp)
-            elif pckt.opcode == WRQ:
-                tmp = threading.Thread(WRQ_connection(pckt.filename, source))
-                tmp.start()
-                threads.append(tmp)
-            else:
-                sock.sendto(pack_error(5, "Target Port reserved for RRQ/WRQ. Errant packet?"), source)
-        except TypeError as t:
-            sock.sendto(pack_error(0, 'Malformed Packet'), source)
+                    sock.sendto(pack_error(5, "Target Port reserved for RRQ/WRQ. Errant packet?"), source)
+            except TypeError as t:
+                sock.sendto(pack_error(0, 'Malformed Packet'), source)
         except TimeoutError as t:
-            pass # Just here for completeness, I don't care if this exception happens.
+            await asyncio.sleep(polling_rate) # I don't understand why sockets don't use this...
         except socket.timeout as t:
-            pass # ...
+            await asyncio.sleep(polling_rate) # ...
     ## Shutdown.txt has been reached. Time to die.
-    for thread in threads:
-        thread.join()
+    for coro in coro_pool:
+        pass # I use this for todo.
+        # shouldn't loop.run_until_complete perform the task completion on its own?
     sock.close()
     return
 
-def RRQ_connection(filename, address, mode='octet'):
+async def RRQ_connection(filename, address, mode='octet'):
     port = random.randrange(5000, 60000)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(('127.0.0.1', port)) #system socket binding autocreation. I'm lazy.
-    sock.settimeout(default_timeout)
+    sock.settimeout(default_timeout) #I should really write a wrapper for this...
     file = None
     block_number = 1
     block = 0
@@ -88,15 +90,16 @@ def RRQ_connection(filename, address, mode='octet'):
         print("sent file with block="+ str(block_number))
         ack = None
         try:
-            ack, frenchman = sock.recvfrom(1024)
+            ack = await loop.sock_recv(sock, 1024) # I wonder if timeout works like normal. I kinda need it to...
             block = unpack(ack).block
             print("received acknowledgement: " + str(block))
+            timeouts = 0
             if block == block_number:
                 block_number = block_number + 1
             else:
                 #err... we got a previous ack.
                 file.seek(-512, 1) # so lazy, so bad... but I don't want to make an async state machine.
-        except TimeoutError:
+        except socket.timeout:
             if timeouts < 3:
                 file.seek(-512, 1)
             else:
@@ -108,7 +111,7 @@ def RRQ_connection(filename, address, mode='octet'):
     sock.close()
     return
 
-def WRQ_connection(filename, address, mode='octet'):
+async def WRQ_connection(filename, address, mode='octet'):
     sock =socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(('', 0))  # system socket binding autocreation. I'm lazy.
     sock.settimeout(default_timeout)
@@ -225,4 +228,5 @@ parser.add_argument('-sp', type=int, required=False, default=69)
 args = parser.parse_args()
 server_port = args.sp
 
-main('', server_port)
+loop = asyncio.AbstractEventLoop()
+loop.run_until_complete(main('', server_port))
