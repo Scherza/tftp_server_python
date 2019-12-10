@@ -15,7 +15,7 @@ default_timeout = 0.500  # in seconds
 block_length = 512  # in Bytes
 
 
-async def main(loop, server_address, server_port):
+def main(loop, server_address, server_port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind((server_address, server_port))
     sock.settimeout(0.0)  # non-blocking socket for udp. Only returns if data is available immediately.
