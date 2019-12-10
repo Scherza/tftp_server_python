@@ -19,6 +19,7 @@ async def main(loop, server_address, server_port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind((server_address, server_port))
     sock.settimeout(0.0)  # non-blocking socket for udp. Only returns if data is available immediately.
+    print('server started')
     coro_pool = []
     while True:
         try:
@@ -52,6 +53,7 @@ async def main(loop, server_address, server_port):
 
 
 async def RRQ_connection(filename, address, mode='octet'):
+    print("loop called. filename = " + filename)
     port = random.randrange(5000, 60000)
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(('127.0.0.1', port))  # system socket binding autocreation. I'm lazy.
